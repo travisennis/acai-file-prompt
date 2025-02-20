@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 
 import { globby } from "globby";
+import { ALL } from "node:dns";
 import { readFile } from "node:fs/promises";
 import { extname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { parseArgs } from "node:util";
 
 // List of text-based file extensions
 const TEXT_FILE_EXTENSIONS = new Set([
@@ -85,44 +88,38 @@ async function processFiles(
   }
 }
 
-function parseArgs(): { format: FormatType; patterns: string[] } {
-  const args = process.argv.slice(2);
-  let format: FormatType = "bracket"; // default format
-  const patterns: string[] = [];
+export async function main() {
+  const { values, positionals } = parseArgs({
+    options: {
+      format: {
+        type: "string",
+        short: "f",
+      },
+    },
+    allowPositionals: true,
+  });
 
-  for (let i = 0; i < args.length; i++) {
-    if (args[i] === "-f" || args[i] === "--format") {
-      i++;
-      const formatArg = args[i]?.toLowerCase();
-      if (!(formatArg && ["xml", "markdown", "bracket"].includes(formatArg))) {
-        console.error(
-          "Invalid format. Supported formats: xml, markdown, bracket",
-        );
-        process.exit(1);
-      }
-      format = formatArg as FormatType;
-    } else {
-      const arg = args[i];
-      if (arg) {
-        patterns.push(arg);
-      }
-    }
+  const format = values.format;
+  if (!(format && ["xml", "markdown", "bracket"].includes(format))) {
+    console.error("Invalid format. Supported formats: xml, markdown, bracket");
+    process.exit(1);
   }
 
+  const patterns = positionals;
   if (patterns.length === 0) {
     console.error("Please provide at least one glob pattern");
     console.error(
-      'Usage: node file-processor.ts -f <format> "glob/pattern/**/*.txt" [pattern2 ...]',
+      'Usage: fileprompt -f <format> "glob/pattern/**/*.txt" [pattern2 ...]',
     );
     process.exit(1);
   }
 
-  return { format, patterns };
+  processFiles(patterns, format as FormatType).catch((err) => {
+    console.error("Unexpected error:", err);
+    process.exit(1);
+  });
 }
 
-// Parse command line arguments and run the processor
-const { format, patterns } = parseArgs();
-processFiles(patterns, format).catch((err) => {
-  console.error("Unexpected error:", err);
-  process.exit(1);
-});
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  main().catch(console.error);
+}
