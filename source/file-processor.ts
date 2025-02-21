@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { globby } from "globby";
-import { ALL } from "node:dns";
 import { readFile } from "node:fs/promises";
 import { extname } from "node:path";
 import { fileURLToPath } from "node:url";
