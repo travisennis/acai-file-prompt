@@ -60,7 +60,9 @@ async function processFiles(
 ): Promise<void> {
   try {
     // Get all files matching the glob patterns
-    const files = await globby(patterns);
+    const files = await globby(patterns, {
+      gitignore: true,
+    });
 
     if (files.length === 0) {
       console.warn("No files found matching the provided patterns");
