@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-import { globby } from "globby";
 import { readFile } from "node:fs/promises";
 import { extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
+import { globby } from "globby";
 
 // List of text-based file extensions
 const TEXT_FILE_EXTENSIONS = new Set([
@@ -12,6 +12,8 @@ const TEXT_FILE_EXTENSIONS = new Set([
   ".md",
   ".js",
   ".ts",
+  ".tsx",
+  ".jsx",
   ".json",
   ".yml",
   ".yaml",
@@ -27,6 +29,17 @@ const TEXT_FILE_EXTENSIONS = new Set([
   ".ini",
   ".log",
   ".csv",
+  ".java",
+  ".py",
+  ".pyw",
+  ".rs",
+  ".go",
+  ".mod",
+  ".sum",
+  ".gradle",
+  ".properties",
+  ".toml",
+  ".env",
 ]);
 
 type FormatType = "xml" | "markdown" | "bracket";
