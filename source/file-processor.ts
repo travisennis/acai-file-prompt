@@ -99,6 +99,8 @@ async function scanFiles(patterns: string[]): Promise<FileInfo[]> {
 async function getUserConfirmation(
   fileCount: number,
   totalTokens: number,
+  fileInfos: FileInfo[],
+  largeFileThreshold: number,
 ): Promise<boolean> {
   const rl = createInterface({
     input: process.stdin,
@@ -109,7 +111,18 @@ async function getUserConfirmation(
   console.log(
     `\nFound ${fileCount} files with approximately ${totalTokens} tokens.`,
   );
-  console.log(`This is roughly ${Math.round(totalTokens / 1000)}K tokens.\n`);
+  console.log(`This is roughly ${Math.round(totalTokens / 1000)}K tokens.`);
+
+  const largeFiles = fileInfos.filter(
+    (file) => file.tokenCount > largeFileThreshold,
+  );
+  if (largeFiles.length > 0) {
+    console.log(`\nFiles exceeding ${largeFileThreshold} tokens:`);
+    largeFiles.forEach((file) => {
+      console.log(`  - ${file.path}: ${file.tokenCount} tokens`);
+    });
+  }
+  console.log("");
 
   const answer = await rl.question("Do you want to proceed? (y/n): ");
   rl.close();
@@ -159,6 +172,10 @@ export async function main() {
         type: "string",
         short: "f",
       },
+      "large-file-threshold": {
+        type: "string",
+        short: "t",
+      },
     },
     allowPositionals: true,
   });
@@ -166,6 +183,15 @@ export async function main() {
   const format = values.format as FormatType;
   if (!format || !["xml", "markdown", "bracket"].includes(format)) {
     console.error("Invalid format. Supported formats: xml, markdown, bracket");
+    process.exit(1);
+  }
+
+  const largeFileThreshold = values["large-file-threshold"]
+    ? parseInt(values["large-file-threshold"], 10)
+    : 5000;
+
+  if (isNaN(largeFileThreshold) || largeFileThreshold <= 0) {
+    console.error("Invalid large file threshold. Must be a positive number.");
     process.exit(1);
   }
 
@@ -193,7 +219,12 @@ export async function main() {
     );
 
     // Step 2: Get user confirmation
-    const confirmed = await getUserConfirmation(fileInfos.length, totalTokens);
+    const confirmed = await getUserConfirmation(
+      fileInfos.length,
+      totalTokens,
+      fileInfos,
+      largeFileThreshold,
+    );
     if (!confirmed) {
       console.log("Operation cancelled by user");
       return;
