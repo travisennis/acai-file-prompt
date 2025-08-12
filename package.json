@@ -23,9 +23,9 @@
     "check": "npx npm-check-updates  --interactive --format group"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.9.4",
-    "@types/node": "^22.15.18",
-    "typescript": "^5.8.3"
+    "@biomejs/biome": "2.1.4",
+    "@types/node": "^24.2.1",
+    "typescript": "^5.9.2"
   },
   "dependencies": {
     "globby": "^14.1.0"
