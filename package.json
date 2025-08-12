@@ -1,7 +1,7 @@
 {
   "name": "@travisennis/acai-file-prompt",
-  "version": "1.0.0",
-  "description": "A commmand-line tool for reading text files and generate prompts.",
+  "version": "0.0.0",
+  "description": "A commmand-line tool for reading text files and generating prompts.",
   "type": "module",
   "bin": "./dist/file-processor.js",
   "keywords": [
