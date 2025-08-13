@@ -63,11 +63,11 @@ function formatTokenCount(tokens: number): string {
   if (tokens < 1000) {
     return `${tokens} tokens`;
   } else if (tokens < 1000000) {
-    return `${(tokens / 1000).toFixed(1).replace(/\.0$/, '')}K tokens`;
+    return `${(tokens / 1000).toFixed(1).replace(/\.0$/, "")}K tokens`;
   } else if (tokens < 1000000000) {
-    return `${(tokens / 1000000).toFixed(1).replace(/\.0$/, '')}M tokens`;
+    return `${(tokens / 1000000).toFixed(1).replace(/\.0$/, "")}M tokens`;
   } else {
-    return `${(tokens / 1000000000).toFixed(1).replace(/\.0$/, '')}B tokens`;
+    return `${(tokens / 1000000000).toFixed(1).replace(/\.0$/, "")}B tokens`;
   }
 }
 
