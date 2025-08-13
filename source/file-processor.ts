@@ -59,6 +59,18 @@ function countTokens(text: string): number {
   return encoding.encode(text).length;
 }
 
+function formatTokenCount(tokens: number): string {
+  if (tokens < 1000) {
+    return `${tokens} tokens`;
+  } else if (tokens < 1000000) {
+    return `${(tokens / 1000).toFixed(1).replace(/\.0$/, '')}K tokens`;
+  } else if (tokens < 1000000000) {
+    return `${(tokens / 1000000).toFixed(1).replace(/\.0$/, '')}M tokens`;
+  } else {
+    return `${(tokens / 1000000000).toFixed(1).replace(/\.0$/, '')}B tokens`;
+  }
+}
+
 function isTextFile(filePath: string): boolean {
   const ext = extname(filePath).toLowerCase();
   return TEXT_FILE_EXTENSIONS.has(ext);
@@ -109,25 +121,24 @@ async function getUserConfirmation(
   });
 
   console.log(
-    `\nFound ${fileCount} files with approximately ${totalTokens} tokens.`,
+    `\nFound ${fileCount} files with approximately ${formatTokenCount(totalTokens)}.`,
   );
-  console.log(`This is roughly ${Math.round(totalTokens / 1000)}K tokens.`);
 
-  const largeFiles = fileInfos.filter(
-    (file) => file.tokenCount > largeFileThreshold,
-  );
+  const largeFiles = fileInfos
+    .filter((file) => file.tokenCount > largeFileThreshold)
+    .sort((a, b) => b.tokenCount - a.tokenCount);
   if (largeFiles.length > 0) {
     console.log(`\nFiles exceeding ${largeFileThreshold} tokens:`);
     largeFiles.forEach((file) => {
-      console.log(`  - ${file.path}: ${file.tokenCount} tokens`);
+      console.log(`  - ${file.path}: ${formatTokenCount(file.tokenCount)}`);
     });
   }
   console.log("");
 
-  const answer = await rl.question("Do you want to proceed? (y/n): ");
+  const answer = await rl.question("Do you want to proceed? (Y/n): ");
   rl.close();
 
-  return answer.toLowerCase().startsWith("y");
+  return !answer || answer.toLowerCase().startsWith("y");
 }
 
 async function getOutputChoice(): Promise<
@@ -143,9 +154,9 @@ async function getOutputChoice(): Promise<
   console.log("1. Copy to clipboard");
   console.log("2. Save to file");
 
-  const choice = await rl.question("Enter choice (1 or 2): ");
+  const choice = await rl.question("Enter choice (1 or 2) [1]: ");
 
-  if (choice === "1") {
+  if (!choice || choice === "1") {
     rl.close();
     return { type: "clipboard" };
   } else {
@@ -190,7 +201,7 @@ export async function main() {
     ? parseInt(values["large-file-threshold"], 10)
     : 5000;
 
-  if (isNaN(largeFileThreshold) || largeFileThreshold <= 0) {
+  if (Number.isNaN(largeFileThreshold) || largeFileThreshold <= 0) {
     console.error("Invalid large file threshold. Must be a positive number.");
     process.exit(1);
   }
